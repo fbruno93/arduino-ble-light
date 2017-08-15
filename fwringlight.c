@@ -10,21 +10,23 @@
 #define ADDRBLUE 3
 #define ADDRSPEED 4
 #define ADDRLED 5
+#define ADDRBRIGHT 6
 // UUID 0xB2F0
 // CHAR 0xB2F1
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 SoftwareSerial my(2, 3); // Rx Tx
 
-int mode,
+byte mode,
 	red,
 	green,
 	blue,
 	s,
-	leds;
+	leds,
+	bright;
 
 int j = 0;
-byte buff[6];
+byte buff[7];
 int arr[12][3] = {
 	{255, 000, 000},
 	{255, 128, 000},
@@ -49,23 +51,42 @@ void color(int r, int g, int b);
 void stoping();
 
 void setup() {
-	Serial.begin(9600);
+
 	my.begin(9600);
-
-	while (!Serial) {}
-
-	Serial.println("START");
+	
+	#ifdef DEBUG	
+		Serial.begin(9600);
+		while (!Serial) {}	
+		Serial.println("START");
+	#endif
 	pixels.begin();
 
+	delay(250);
+	
 	mode = EEPROM.read(ADDRMODE);
-	Serial.println(mode, DEC);
 	red = EEPROM.read(ADDRRED);
 	green = EEPROM.read(ADDRGREEN);
 	blue = EEPROM.read(ADDRBLUE);
 	s = EEPROM.read(ADDRSPEED);
 	leds = EEPROM.read(ADDRLED);
+	bright = EEPROM.read(ADDRBRIGHT);
+	
+	if (bright == 0) {
+		bright = 5;
+	}
 
-	delay(100);
+	pixels.setBrightness(bright);
+	
+	#ifdef DEBUG
+		Serial.println(mode, DEC);
+		Serial.println(red, DEC);
+		Serial.println(green, DEC);
+		Serial.println(blue, DEC);
+		Serial.println(s, DEC);
+		Serial.println(leds, DEC);
+		Serial.println(bright, DEC);
+	#endif
+	delay(250);
 }
 
 
@@ -74,12 +95,12 @@ void loop() {
 		my.readBytes(buff, 6);
 		
 		#ifdef DEBUG
-		Serial.println("Datas coming");
-		for (int i = 0 ; i < 6 ; i++) {
-			Serial.print(buff[i], DEC);
-			Serial.print(" ");
-		}
-		Serial.println("");
+			Serial.println("Datas coming");
+			for (int i = 0 ; i < 6 ; i++) {
+				Serial.print(buff[i], DEC);
+				Serial.print(" ");
+			}
+			Serial.println("");
 		#endif
 
 		j = 0;
@@ -90,6 +111,7 @@ void loop() {
 		s = buff[4];
 		leds = buff[5];
 
+		pixels.setBrightness(buff[6])
 
 		EEPROM.write(ADDRMODE, mode);
 		EEPROM.write(ADDRRED, red);
@@ -97,6 +119,9 @@ void loop() {
 		EEPROM.write(ADDRBLUE, blue);
 		EEPROM.write(ADDRSPEED, s);
 		EEPROM.write(ADDRLED, leds);
+		EEPROM.write(ADDRBRIGHT, buff[6]);
+
+		
 	}
 
 	switch(mode) {
