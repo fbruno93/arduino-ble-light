@@ -11,11 +11,12 @@
 #define ADDRSPEED 4
 #define ADDRLED 5
 #define ADDRBRIGHT 6
+
 // UUID 0xB2F0
 // CHAR 0xB2F1
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-SoftwareSerial my(2, 3); // Rx Tx
+SoftwareSerial swSerial(2, 3); // Rx Tx
 
 byte mode,
 	red,
@@ -54,7 +55,7 @@ void stoping();
 
 void setup() {
 
-	my.begin(9600);
+	swSerial.begin(9600);
 	
 	#ifdef DEBUG	
 		Serial.begin(9600);
@@ -93,8 +94,8 @@ void setup() {
 
 
 void loop() {
-	if (my.available()) {
-		my.readBytes(buff, 6);
+	if (swSerial.available()) {
+		swSerial.readBytes(buff, 6);
 		
 		#ifdef DEBUG
 			Serial.println("Datas coming");
