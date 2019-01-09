@@ -23,9 +23,11 @@ byte mode,
 	blue,
 	s,
 	leds,
-	bright;
+	bright,
+	lingth_on;
 
 int j = 0;
+long last_time;
 byte buff[7];
 int arr[12][3] = {
 	{255, 000, 000},
@@ -121,7 +123,8 @@ void loop() {
 		EEPROM.write(ADDRLED, leds);
 		EEPROM.write(ADDRBRIGHT, buff[6]);
 
-		
+		lingth_on = NUMPIXELS;
+		last_time = millis();
 	}
 
 	switch(mode) {
@@ -197,17 +200,25 @@ void blinking(int r, int g, int b, int tim) {
 }
 
 void counter(int r, int g, int b, int total) {
+	long current_time = millis();
 	int moyen = total / NUMPIXELS;
-	for (int i = 0 ; i < NUMPIXELS ; i++)
-		pixels.setPixelColor(i, pixels.Color(r,g,b));
 
-	pixels.show();
+	if (current_time - last_time > moyen * 1000) {
 
-	for (int i = 11 ; i >= 0 ; i--) {
-		delay(moyen * 1000);
-		pixels.setPixelColor(i, pixels.Color(0,0,0));
+		for (int i = 0 ; i < lingth_on ; i++)
+			pixels.setPixelColor(i, pixels.Color(r,g,b));
+
 		pixels.show();
+
+		for (int i = 11 ; i >= lingth_on ; i--) {
+			// delay(moyen * 1000);
+			pixels.setPixelColor(i, pixels.Color(0,0,0));
+			pixels.show();
+		}
+		lingth_on--;
+		last_time = millis();
 	}
+	
 }
 
 void snake(int r, int g, int b, int leds, int spee) {
